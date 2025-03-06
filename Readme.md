@@ -29,7 +29,7 @@ GreenAcquisition/
 
 ##############################################################################################################################################
 
-# Green Acquisition Data Analysis Project
+Green Acquisition Data Analysis Project
 
 ## Project Overview
 This project processes and analyzes merger and acquisition (M&A) data with a focus on environmental metrics. It transforms raw Bloomberg M&A data into a structured dataset enriched with financial metrics, stock prices, and environmental classifications.
