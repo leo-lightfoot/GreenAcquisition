@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 def clean_dataframe(df):
     """
@@ -58,107 +59,129 @@ def process_ghg_data(ghg_data, deals_data):
     
     return merged_data
 
-def main():
-    print("Starting data merge process...")
-    
-    # Load all data files
-    deals_file = "Bloomerg_M&A_data_ticker.csv"
-    financials_file = "financial_metrics.csv"
-    ghg_file = "GHG.csv"
-    
-    try:
-        print(f"Loading {deals_file}...")
-        deals_data = pd.read_csv(deals_file)
-        print(f"Loading {financials_file}...")
-        financials_data = pd.read_csv(financials_file)
-        print(f"Loading {ghg_file}...")
-        ghg_data = pd.read_csv(ghg_file)
-    except FileNotFoundError as e:
-        print(f"Error: Could not find one of the input files - {str(e)}")
-        return
-    except Exception as e:
-        print(f"Error loading files: {str(e)}")
-        return
-    
-    print("Cleaning and standardizing data...")
-    # Clean all dataframes
-    deals_data = clean_dataframe(deals_data)
-    financials_data = clean_dataframe(financials_data)
-    ghg_data = clean_dataframe(ghg_data)
-    
-    # Rename columns to match desired output
-    deals_data = deals_data.rename(columns={
-        'Announce Date': 'Deal Announce Date',
-        'Ticker': 'Acquirer Ticker'
-    })
-    financials_data = financials_data.rename(columns={
-        'Announce Date': 'Deal Announce Date',
-        'Ticker': 'Acquirer Ticker'
-    })
-    ghg_data = ghg_data.rename(columns={
-        'Ticker': 'Acquirer Ticker'
+def process_bloomberg_sales_data(bbg_sales_data, deals_data):
+    """
+    Process Bloomberg sales data and merge with deals data
+    """
+    # Rename columns for consistency
+    bbg_sales_data = bbg_sales_data.rename(columns={
+        'List of Tickers': 'Acquirer Ticker',
+        'Sales in Mn. Dollars': 'Annual_Sales'
     })
     
-    print("Merging deals data with financial metrics...")
-    # First merge: Deals data with Financial metrics
+    # Convert year to integer if it's not
+    if bbg_sales_data['Year'].dtype != 'int64':
+        bbg_sales_data['Year'] = bbg_sales_data['Year'].astype(int)
+    
+    # Calculate previous year for deals data
+    deals_data['Previous Year'] = deals_data['Deal Announce Date'].dt.year - 1
+    
+    # Merge Sales data into deals data
     merged_data = pd.merge(
         deals_data,
-        financials_data[['Acquirer Ticker', 'Deal Announce Date', 'Market_Cap_mil', 'Debt_to_Equity', 'ROA_percent']],
-        on=['Acquirer Ticker', 'Deal Announce Date'],
+        bbg_sales_data,
+        left_on=['Acquirer Ticker', 'Previous Year'],
+        right_on=['Acquirer Ticker', 'Year'],
         how='left'
     )
     
-    print("Adding GHG emissions data...")
-    # Second merge: Add GHG emissions data
-    final_data = process_ghg_data(ghg_data, merged_data)
+    # Drop temporary columns
+    merged_data.drop(columns=['Year'], inplace=True, errors='ignore')
     
-    # Rename Market Cap column for clarity
-    final_data = final_data.rename(columns={'Market_Cap_mil': 'Market_Cap_AD_mil'})
+    return merged_data
+
+def main():
+    # Define file paths
+    ma_data_path = "../../DATA/1. RAW DATA/Bloomberg_MA_Data.csv"
+    ghg_data_path = "../../DATA/1. RAW DATA/GHG.csv"
+    tickers_path = "../../DATA/2. INTERIM/company_tickers.csv"
+    financial_metrics_path = "../../DATA/2. INTERIM/financial_metrics.csv"
+    bbg_sales_data_path = "../../DATA/1. RAW DATA/Sales_data_BBG.csv"
+    output_path = "../../DATA/2. INTERIM/master_data_formatted.csv"
     
-    # Arrange columns in specified order
-    column_order = [
-        'Deal Announce Date',
-        'Previous Year',
-        'Acquirer Ticker',
-        'Acquirer Name',
-        'Target Name',
-        'Seller Name',
-        'Announced Total Value (mil.)',
-        'TV/EBITDA',
-        'T_minus_10_Date',
-        'T_minus_10_Price',
-        'T_plus_10_Date',
-        'T_plus_10_Price',
-        'Market_Cap_AD_mil',
-        'ROA_percent',
-        'Acquirer_GHG_Emissions',
-        'Deal Status'
-    ]
+    # Create output directory if it doesn't exist
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
-    # Create missing columns if they don't exist
-    for col in column_order:
-        if col not in final_data.columns:
-            final_data[col] = None
-    
-    # Select and order columns
-    final_data = final_data[column_order]
-    
-    # Save the final merged dataset
-    output_file = "master_data.csv"
-    final_data.to_csv(output_file, index=False)
-    
-    print(f"\n✅ Master data creation complete! Saved to {output_file}")
-    print(f"Total records: {len(final_data)}")
-    print("\nFirst few rows of the master data:")
-    print(final_data.head().to_string())
-    
-    # Print data completeness summary
-    print("\nData completeness summary:")
-    for column in final_data.columns:
-        missing = final_data[column].isna().sum()
-        complete = len(final_data) - missing
-        percent = (complete/len(final_data))*100
-        print(f"{column}: {complete:,} records ({percent:.1f}% complete)")
+    try:
+        # Load datasets
+        print("Loading datasets...")
+        ma_data = pd.read_csv(ma_data_path)
+        ghg_data = pd.read_csv(ghg_data_path)
+        tickers = pd.read_csv(tickers_path)
+        financial_metrics = pd.read_csv(financial_metrics_path)
+        
+        # Load Bloomberg sales data
+        bbg_sales_data = None
+        if os.path.exists(bbg_sales_data_path):
+            bbg_sales_data = pd.read_csv(bbg_sales_data_path)
+            print(f"Loaded Bloomberg sales data with {len(bbg_sales_data)} rows")
+        else:
+            print("Bloomberg sales data file not found. Proceeding without sales data.")
+        
+        # Clean datasets
+        print("Cleaning datasets...")
+        ma_data = clean_dataframe(ma_data)
+        ghg_data = clean_dataframe(ghg_data)
+        tickers = clean_dataframe(tickers)
+        financial_metrics = clean_dataframe(financial_metrics)
+        if bbg_sales_data is not None:
+            bbg_sales_data = clean_dataframe(bbg_sales_data)
+        
+        # Merge M&A data with tickers
+        print("Merging M&A data with tickers...")
+        merged_data = pd.merge(
+            ma_data,
+            tickers,
+            on=['Deal Number'],
+            how='inner'
+        )
+        
+        # Merge with financial metrics
+        print("Merging with financial metrics...")
+        merged_data = pd.merge(
+            merged_data,
+            financial_metrics,
+            on=['Acquirer Ticker', 'Deal Announce Date'],
+            how='left'
+        )
+        
+        # Merge with Bloomberg sales data if available
+        if bbg_sales_data is not None:
+            print("Merging with Bloomberg sales data...")
+            merged_data = process_bloomberg_sales_data(bbg_sales_data, merged_data)
+        
+        # Process GHG data and merge
+        print("Processing GHG data and merging...")
+        merged_data = process_ghg_data(ghg_data, merged_data)
+        
+        # Rename GHG emissions column for clarity
+        merged_data = merged_data.rename(columns={'GHG_Emissions': 'Acquirer_GHG_Emissions'})
+        
+        # Save the merged dataset
+        print(f"Saving merged dataset with {len(merged_data)} rows...")
+        merged_data.to_csv(output_path, index=False)
+        
+        print(f"✅ Data merging complete! Output saved to {output_path}")
+        
+        # Print summary statistics
+        print("\nSummary Statistics:")
+        print(f"Original M&A data: {len(ma_data)} rows")
+        print(f"Tickers data: {len(tickers)} rows")
+        print(f"Financial metrics: {len(financial_metrics)} rows")
+        if bbg_sales_data is not None:
+            print(f"Bloomberg sales data: {len(bbg_sales_data)} rows")
+        print(f"GHG emissions data: {len(ghg_data)} rows")
+        print(f"Final merged dataset: {len(merged_data)} rows")
+        
+        # Print column information
+        print("\nColumns in merged dataset:")
+        for col in merged_data.columns:
+            non_null = merged_data[col].count()
+            percent = (non_null / len(merged_data)) * 100
+            print(f"{col}: {non_null} non-null values ({percent:.1f}%)")
+        
+    except Exception as e:
+        print(f"Error: {str(e)}")
 
 if __name__ == "__main__":
     main() 

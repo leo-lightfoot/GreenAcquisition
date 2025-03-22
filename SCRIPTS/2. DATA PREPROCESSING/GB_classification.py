@@ -3,11 +3,11 @@ import numpy as np
 
 def classify_by_carbon_intensity(df):
     """
-    Classify acquirers based on their carbon intensity (GHG emissions / Market Cap)
+    Classify acquirers based on their carbon intensity (GHG emissions / Annual Sales)
     Only the top 25th percentile (lowest carbon intensity) are classified as Green
     """
-    # Calculate Carbon Intensity
-    df['Carbon_Intensity'] = df['Acquirer_GHG_Emissions'] / df['Market_Cap_AD_mil']
+    # Calculate Carbon Intensity using Annual Sales instead of Market Cap
+    df['Carbon_Intensity'] = df['Acquirer_GHG_Emissions'] / df['Annual_Sales']
     
     # Format Carbon Intensity to 4 decimal places
     df['Carbon_Intensity'] = df['Carbon_Intensity'].round(4)
@@ -51,7 +51,7 @@ def format_carbon_intensity(df):
 
 def main():
     # Load the data
-    input_file = "master_data_formatted.csv"
+    input_file = "../../DATA/2. INTERIM/master_data_formatted.csv"
     try:
         df = pd.read_csv(input_file)
         print(f"Loaded {len(df)} rows from {input_file}")
@@ -64,8 +64,12 @@ def main():
         df_all['Target_Classification'] = df_all['Target Name'].apply(classify_target_by_keywords)
         
         # For carbon intensity classification, we need to drop rows with missing values
-        print("\nClassifying acquirers based on carbon intensity...")
-        df_carbon = df_all.dropna(subset=['Acquirer_GHG_Emissions', 'Market_Cap_AD_mil'])
+        print("\nClassifying acquirers based on carbon intensity (emissions/sales)...")
+        df_carbon = df_all.dropna(subset=['Acquirer_GHG_Emissions', 'Annual_Sales'])
+        
+        # Filter out zero or negative sales values
+        df_carbon = df_carbon[df_carbon['Annual_Sales'] > 0]
+        
         df_carbon, percentile_25th = classify_by_carbon_intensity(df_carbon)
         
         # Merge the carbon intensity classification back to the main dataframe
@@ -80,7 +84,7 @@ def main():
         df_all = format_carbon_intensity(df_all)
         
         # Save the results
-        output_file = "master_data_dual_classified.csv"
+        output_file = "../../DATA/3. PROCESSED/master_data_dual_classified.csv"
         df_all.to_csv(output_file, index=False)
         
         # Print summary statistics
@@ -102,7 +106,7 @@ def main():
         
         print("\nSample of classified data:")
         print(df_all[['Target Name', 'Target_Classification', 
-                     'Acquirer_Classification', 'Carbon_Intensity']].head().to_string())
+                     'Acquirer_Classification', 'Carbon_Intensity', 'Annual_Sales']].head().to_string())
         
     except Exception as e:
         print(f"Error processing the data: {str(e)}")

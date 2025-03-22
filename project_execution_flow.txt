@@ -1,0 +1,74 @@
+# GreenAcquisition Project Execution Flow
+
+## Overview
+This document outlines the sequential execution flow of the GreenAcquisition project, which analyzes M&A data with environmental metrics. The project now uses Bloomberg sales data directly instead of fetching from Yahoo Finance.
+
+## Data Sources (Bloomberg and WRDS)
+1. Bloomberg M&A Data (`DATA/1. RAW DATA/Bloomberg_MA_Data.csv`)
+2. GHG Emissions Data (`DATA/1. RAW DATA/GHG.csv`)
+3. Bloomberg Sales Data (`DATA/1. RAW DATA/Sales_data_BBG.csv`)
+
+## Execution Sequence
+
+### 1. Data Collection Phase
+1. **Fetch Tickers** (`SCRIPTS/DATACOLLECTION/fetch_tickers.py`)
+   - Input: Bloomberg_MA_Data.csv
+   - Output: company_tickers.csv
+   - Description: Extracts company tickers from Yahoo Finance for further processing
+
+2. **Fetch Financial Metrics** (`SCRIPTS/DATACOLLECTION/fetch_financial_metrics.py`)
+   - Input: company_tickers.csv
+   - Output: financial_metrics.csv
+   - Description: Retrieves market cap, debt/equity ratio, and ROA from yahoo Finance to enrich the available data
+
+3. **Fetch Stock Prices** (`SCRIPTS/DATACOLLECTION/fetch_stock_prices.py`)
+   - Input: company_tickers.csv
+   - Description: Gets stock prices from Yahoo Finance for event study analysis (T-10 and T+10 days around announcement)
+
+### 2. Data Preprocessing Phase
+1. **Merge Data** (`SCRIPTS/2. DATA PREPROCESSING/merge_data.py`)
+   - Inputs:
+     - Bloomberg_MA_Data.csv (M&A deal data)
+     - GHG.csv (emissions data)
+     - company_tickers.csv (ticker information)
+     - financial_metrics.csv (financial metrics)
+     - Sales_data_BBG.csv (Bloomberg sales data)
+   - Output: master_data_formatted.csv
+   - Description: Combines all collected data into a single master dataset and performs initial formatting
+
+2. **Clean Data** (`SCRIPTS/2. DATA PREPROCESSING/clean_data.py`)
+   - Input: master_data_formatted.csv
+   - Output: master_data_cleaned.csv
+   - Description: Handles missing values, standardizes formats, and removes duplicates
+
+3. **Classify Companies** (`SCRIPTS/2. DATA PREPROCESSING/GB_classification.py`)
+   - Input: master_data_cleaned.csv
+   - Output: master_data_dual_classified.csv
+   - Description: 
+     - Calculates carbon intensity (emissions/sales) using Bloomberg sales data
+     - Classifies companies as Green/Brown based on carbon intensity
+     - Classifies target companies based on name keywords
+
+### 3. Analysis Phase
+1. **Event Study Analysis** (`test.py`)
+   - Input: master_data_dual_classified.csv
+   - Outputs:
+     - Results CSV files in DATA/3. PROCESSED/results/
+     - Plots in DATA/3. PROCESSED/plots/
+   - Description:
+     - Calculates abnormal returns around M&A announcements
+     - Performs statistical tests on abnormal returns
+     - Conducts regression analysis of CAR on carbon intensity
+     - Generates visualizations
+
+### 4. Pipeline Execution
+The entire pipeline can be executed using `run_pipeline.py` with various options:
+- `python run_pipeline.py` - Run the entire pipeline
+- `python run_pipeline.py --skip-data-collection` - Skip the data collection phase
+- `python run_pipeline.py --skip-preprocessing` - Skip the preprocessing phase
+
+## Key Modifications
+- Removed reliance on Yahoo Finance for sales data
+- Now using Bloomberg sales data directly from Sales_data_BBG.csv
+- Carbon intensity calculation now uses actual sales data from Bloomberg instead of estimates
+- Improved reliability with direct data source usage 
