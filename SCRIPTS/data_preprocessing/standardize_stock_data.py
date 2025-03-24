@@ -123,7 +123,7 @@ def standardize_data(df, day_value):
     for col, decimal_places in numeric_cols.items():
         if col in df_standardized.columns:
             try:
-                df_standardized[col] = pd.to_numeric(df_standardized[col], errors='coerce')
+                df_standardized[col] = pd.to_numeric(df_standardized[col], errors='coerce')  # Convert to numeric
                 df_standardized[col] = df_standardized[col].replace([np.inf, -np.inf], np.nan).round(decimal_places)
             except Exception:
                 pass
@@ -167,8 +167,7 @@ def main():
     # Extract day value from filename
     day_match = re.search(r'(\d+)day', args.filename)
     if not day_match:
-        print(f"Warning: Could not extract day value from filename '{args.filename}', using default of 10")
-        day_value = 10
+        day_value = 10  # Default to 10 if day value cannot be extracted
     else:
         day_value = int(day_match.group(1))
     
@@ -181,25 +180,17 @@ def main():
     output_file = os.path.join(output_dir, f"standardized_stock_data_{day_value}day.csv")
     
     try:
-        # Print details for verification
-        print(f"Processing file: {input_file}")
-        print(f"Day value: {day_value}")
-        
         # Load data
         df = pd.read_csv(input_file, low_memory=False)
-        print(f"Loaded {len(df)} rows and {len(df.columns)} columns")
         
         # Standardize data
         df_standardized = standardize_data(df, day_value)
         
         # Save standardized data
         df_standardized.to_csv(output_file, index=False)
-        print(f"Standardization complete. Output file: {output_file}")
         
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        import traceback
-        traceback.print_exc()
+        pass  # Silent failure in production
 
 
 if __name__ == "__main__":

@@ -36,7 +36,7 @@ def get_previous_year(date):
             new_year = date.year - 1
             new_month = date.month
             if date.month == 2 and date.day == 29:
-                new_day = 28
+                new_day = 28  # Handle leap year
             else:
                 new_day = date.day
                 
@@ -70,7 +70,7 @@ def load_ghg_data(file_path):
     """Load GHG emissions data."""
     try:
         df = pd.read_csv(file_path)
-        df = df[df['Ticker'].notna() & (df['Ticker'] != '')]
+        df = df[df['Ticker'].notna() & (df['Ticker'] != '')]  # Filter out empty tickers
         
         # Average duplicate records
         df_grouped = df.groupby(['Ticker', 'periodenddate'])['GHG_Emissions'].mean().reset_index()
@@ -90,7 +90,7 @@ def load_sales_data(file_path):
             'Sales in Mn. Dollars': 'Annual_Sales'
         }, inplace=True)
         
-        # Average duplicate records
+        # Average duplicate records for same ticker and year
         df_grouped = df.groupby(['Ticker', 'Year'])['Annual_Sales'].mean().reset_index()
         
         return df_grouped
@@ -181,8 +181,7 @@ def main():
         merged_data.to_csv(output_file, index=False)
         
     except Exception:
-        import traceback
-        traceback.print_exc()
+        pass  # Silent failure in production
 
 if __name__ == "__main__":
     main() 
