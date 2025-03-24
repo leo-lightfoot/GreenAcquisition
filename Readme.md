@@ -1,155 +1,157 @@
+# GreenAcquisition
+
+This repository contains scripts and data for analyzing the environmental impact of mergers and acquisitions, with a focus on green vs. brown company classifications based on carbon intensity.
+
+## Project Structure
+
+```
 GreenAcquisition/
+├── SCRIPTS/
+│   ├── data_collection/           # Scripts for collecting raw data
+│   │   └── fetch_stock_prices.py  # Script to fetch stock prices around M&A dates
+│   │
+│   └── data_preprocessing/        # Scripts for cleaning and processing data
+│       ├── merge_raw_all_sources.py    # Merge data from various sources
+│       ├── greenbrown_classification.py # Classify companies as green or brown
+│       └── standardize_stock_data.py    # Standardize stock price data format
+│
 ├── data/
-│   ├── raw/
-│   │   ├── Bloomberg_MA_Data.csv
-│   │   └── GHG.csv
-│   │
-│   ├── interim/
-│   │   ├── company_tickers.csv
-│   │   ├── financial_metrics.csv
-│   │   ├── sales_data.csv
-│   │   └── master_data_raw.csv
-│   │
-│   └── processed/
-│       ├── master_data_clean.csv
-│       ├── master_data_classified.csv
-│       ├── results/
-│       │   ├── all_energy_deals_results.csv
-│       │   └── brown_acquires_green_results.csv
-│       └── plots/
-│           ├── CAR_vs_CI_All_Energy_Sector_MAs.png
-│           └── CAR_vs_CI_Brown_Acquires_Green.png
+│   ├── 1_raw/      # Original unprocessed data
+│   ├── 2_interim/  # Intermediate data that has been transformed
+│   └── 3_processed/# Final processed data ready for analysis
 │
-├── scripts/
-│   ├── 1_data_collection/
-│   │   ├── fetch_tickers.py
-│   │   ├── fetch_financial_metrics.py
-│   │   ├── fetch_sales_data.py
-│   │   └── fetch_stock_prices.py
-│   │
-│   └── 2_data_processing/
-│       ├── merge_data.py
-│       ├── clean_data.py   
-│       └── GB_classification.py
-│
-├── run_pipeline.py
-├── test.py
-└── README.md
-
-
-##############################################################################################################################################
-
-# Green Acquisition Data Analysis Project
-
-## Project Overview
-This project processes and analyzes merger and acquisition (M&A) data with a focus on environmental metrics. It transforms raw Bloomberg M&A data into a structured dataset enriched with financial metrics, stock prices, sales data, and environmental classifications.
-
-## Key Features
-- Calculates carbon intensity as emissions/sales (instead of emissions/market cap)
-- Performs event study analysis on M&A deals
-- Conducts regression analysis of Cumulative Abnormal Returns (CAR) on carbon intensity
-- Generates visualizations of the relationship between carbon intensity and abnormal returns
+└── logs/           # Log files from script executions
+```
 
 ## Data Processing Pipeline
 
-### 1. Data Collection
+The data processing follows a multi-stage pipeline:
 
-1. **Fetch Company Tickers** (`fetch_tickers.py`)
-   - Input: `Bloomberg_MA_Data.csv`
-   - Output: `company_tickers.csv`
-   - Function: Extracts company tickers from Yahoo Finance
+1. **Data Collection** - Collect raw M&A data and stock prices
+2. **Data Merging** - Combine data from different sources
+3. **Classification** - Classify companies as green or brown based on carbon intensity
+4. **Standardization** - Clean and standardize data formats for analysis
 
-2. **Fetch Financial Metrics** (`fetch_financial_metrics.py`)
-   - Input: `company_tickers.csv`
-   - Output: `financial_metrics.csv`
-   - Function: Retrieves market cap, debt/equity ratio, and ROA
+## Scripts Documentation
 
-3. **Fetch Sales Data** (`fetch_sales_data.py`) - NEW
-   - Input: `company_tickers.csv`
-   - Output: `sales_data.csv`
-   - Function: Retrieves annual sales data for carbon intensity calculation
+### Data Collection
 
-4. **Fetch Stock Prices** (`fetch_stock_prices.py`)
-   - Input: `company_tickers.csv`
-   - Output: Stock price data for event analysis
-   - Function: Gets stock prices for T-10 and T+10 days around announcement
+#### `fetch_stock_prices.py`
 
-### 2. Data Preprocessing
-1. **Merge Data** (`merge_data.py`)
-   - Combines all collected data into a single master dataset
-   - Performs initial data cleaning and standardization
-   - Output: `master_data_raw.csv`
+This script fetches stock prices for companies around merger and acquisition announcement dates. It uses Yahoo Finance API to retrieve historical stock data.
 
-2. **Clean Data** (`clean_data.py`)
-   - Handles missing values
-   - Standardizes formats (dates, numbers)
-   - Removes duplicates
-   - Output: `master_data_clean.csv`
+**Features:**
+- Fetches stock prices for specified T-day windows (e.g., T-3, T+10)
+- Handles missing or invalid ticker symbols
+- Includes retry logic for API failures
+- Supports parallel processing for faster data retrieval
+- Logs progress and errors
 
-3. **Classify Companies** (`GB_classification.py`)
-   - Calculates carbon intensity (emissions/sales)
-   - Classifies companies as Green/Brown
-   - Performs target company classification
-   - Output: `master_data_classified.csv`
-
-### 3. Analysis
-1. **Event Study Analysis** (`test.py`)
-   - Calculates abnormal returns around M&A announcements
-   - Performs statistical tests on abnormal returns
-   - Conducts regression analysis of CAR on carbon intensity
-   - Generates visualizations
-   - Output: Results CSV files and plots
-
-## How to Run
-
-### Using the Pipeline Script
-The project includes a pipeline script that automates the entire workflow:
-
+**Usage:**
 ```bash
-# Run the entire pipeline
-python run_pipeline.py
-
-# Skip data collection if you already have the data
-python run_pipeline.py --skip-data-collection
-
-# Skip sales data collection if you don't need to update it
-python run_pipeline.py --skip-sales-data
-
-# Skip preprocessing if you only want to run the analysis
-python run_pipeline.py --skip-preprocessing --skip-data-collection
-
-# Only run the analysis
-python run_pipeline.py --skip-data-collection --skip-preprocessing
+python SCRIPTS/data_collection/fetch_stock_prices.py --days_before 10 --days_after 10
+```
+or
+```bash
+python SCRIPTS/data_collection/fetch_stock_prices.py --days_before 3 --days_after 3
 ```
 
-### Manual Execution
-You can also run each script individually in the following order:
+**Command-line Arguments:**
+- `--days_before`: Number of trading days before announcement (default: 10)
+- `--days_after`: Number of trading days after announcement (default: 10)
 
+### Data Preprocessing
+
+#### `merge_raw_all_sources.py`
+
+This script merges data from multiple sources to create a comprehensive dataset for analysis.
+
+**Data Sources:**
+- M&A data with ticker symbols
+- GHG emissions data
+- Annual sales data
+
+**Processing Steps:**
+1. Loads M&A data with tickers
+2. Loads GHG emissions data
+3. Loads sales data
+4. Merges all data sources based on ticker and reference year
+5. Calculates carbon intensity as the ratio of GHG emissions to annual sales
+6. Removes entries with missing critical data
+7. Saves the merged dataset to a CSV file
+
+**Output:**
+- `master_data_merged.csv` in the `data/1_raw` directory
+
+#### `greenbrown_classification.py`
+
+This script classifies companies as "Green" or "Brown" based on their carbon intensity and identifies acquisition targets by industry keywords.
+
+**Classification Methods:**
+- **Acquirer Classification**: Companies are classified as "Green" if their carbon intensity (GHG emissions / Annual Sales) is in the lowest 25th percentile, otherwise "Brown"
+- **Target Classification**: Companies are classified based on keywords in their names that indicate green, brown, or neutral industries
+
+**Output:**
+- `master_data_classified.csv` in the `data/2_interim` directory
+
+#### `standardize_stock_data.py`
+
+This script standardizes the stock price data format to ensure consistency across different time windows.
+
+**Features:**
+- Extracts day value from filenames (e.g., 3-day, 10-day)
+- Maps and standardizes column names regardless of input format
+- Handles duplicate columns and resolves naming conflicts
+- Formats numeric values with appropriate precision
+- Parses and standardizes date formats
+- Adds denomination information to column headers (e.g., dollars, metric tonnes)
+
+**Usage:**
 ```bash
-# 1. Data Collection
-python SCRIPTS/1.\ DATA\ COLLECTION/fetch_tickers.py
-python SCRIPTS/1.\ DATA\ COLLECTION/fetch_financial_metrics.py
-python SCRIPTS/1.\ DATA\ COLLECTION/fetch_sales_data.py
-python SCRIPTS/1.\ DATA\ COLLECTION/fetch_stock_prices.py
-
-# 2. Data Preprocessing
-python SCRIPTS/2.\ DATA\ PREPROCESSING/merge_data.py
-python SCRIPTS/2.\ DATA\ PREPROCESSING/clean_data.py
-python SCRIPTS/2.\ DATA\ PREPROCESSING/GB_classification.py
-
-# 3. Analysis
-python test.py
+python SCRIPTS/data_preprocessing/standardize_stock_data.py master_data_with_stock_prices_10day.csv
+```
+or
+```bash
+python SCRIPTS/data_preprocessing/standardize_stock_data.py master_data_with_stock_prices_3day.csv
 ```
 
-## Results
-The analysis results are saved in the following locations:
-- CSV files: `DATA/3. PROCESSED/results/`
-- Plots: `DATA/3. PROCESSED/plots/`
+**Output:**
+- Standardized CSV files in the `data/3_processed` directory (e.g., `standardized_stock_data_10day.csv`)
 
-## Dependencies
-- pandas
-- numpy
-- yfinance
-- statsmodels
-- matplotlib
-- seaborn
+## Data Files
+
+### Raw Data
+- `bloomberg_ma_with_tickers.csv` - M&A transaction data with company tickers
+- `ghg.csv` - Greenhouse gas emissions data
+- `sales_data_bbg.csv` - Annual sales data for companies
+
+### Interim Data
+- `master_data_merged.csv` - Combined data from all sources
+- `master_data_classified.csv` - Data with green/brown classifications
+- `master_data_with_stock_prices_3day.csv` - M&A data with 3-day stock price windows
+- `master_data_with_stock_prices_10day.csv` - M&A data with 10-day stock price windows
+
+### Processed Data
+- `standardized_stock_data_3day.csv` - Standardized 3-day stock price data
+- `standardized_stock_data_10day.csv` - Standardized 10-day stock price data
+
+## Column Definitions
+
+### Key Columns
+- `Announce Date` - Date when the M&A was announced
+- `Reference_Year` - The year used for matching with emissions and financial data
+- `Ticker` - Company ticker symbol
+- `Acquirer Name` - Name of the acquiring company
+- `Target Name` - Name of the company being acquired
+- `Acquirer_GHG_Emissions (Metric Tonnes)` - Greenhouse gas emissions of acquirer
+- `Annual_Sales (Million $)` - Annual sales of acquirer
+- `Carbon_Intensity` - Ratio of GHG emissions to sales
+- `Acquirer_Classification` - Green or Brown classification based on carbon intensity
+- `Target_Classification` - Green, Brown, or Neutral classification based on industry keywords
+- `T_minus_X_Price ($)` - Stock price X days before announcement
+- `T_plus_X_Price ($)` - Stock price X days after announcement
+- `Percent_Return` - Percentage return over the event window
+
+## License
+
+This project is licensed under the terms of the LICENSE file included in this repository.
