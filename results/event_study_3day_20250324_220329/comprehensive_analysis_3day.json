@@ -1,0 +1,140 @@
+{
+    "All Deals": {
+        "Day Range": "3",
+        "Sample Characteristics": {
+            "Sample Size": 827,
+            "Positive Returns Count": 421,
+            "Negative Returns Count": 406,
+            "Win Ratio": 0.5090689238210399
+        },
+        "Return Statistics": {
+            "Mean Abnormal Return": 0.09700683647159535,
+            "Median Abnormal Return": 0.06691986385349225,
+            "Standard Deviation": 6.693479899518765,
+            "T-statistic": 0.4167764135081775,
+            "P-value": 0.6769502406170346,
+            "Weighted Abnormal Return": -0.6105067760655882
+        },
+        "Carbon Intensity Analysis": {
+            "Correlation": -0.019360136470597998,
+            "Correlation P-value": 0.5780069791703298,
+            "Regression": {
+                "Coefficient": -0.05793707081067633,
+                "P-value": 0.5780069791703327,
+                "R-squared": 0.00037481488416002406
+            }
+        },
+        "Size Effect Analysis": {
+            "Returns by Size": {
+                "Small": {
+                    "mean": 0.7116050254794578,
+                    "count": 208
+                },
+                "Medium": {
+                    "mean": -0.2186329541852716,
+                    "count": 206
+                },
+                "Large": {
+                    "mean": 0.40540999710908154,
+                    "count": 206
+                },
+                "Very Large": {
+                    "mean": -0.5133587554590469,
+                    "count": 207
+                }
+            }
+        }
+    },
+    "Green Target": {
+        "Day Range": "3",
+        "Sample Characteristics": {
+            "Sample Size": 191,
+            "Positive Returns Count": 98,
+            "Negative Returns Count": 93,
+            "Win Ratio": 0.5130890052356021
+        },
+        "Return Statistics": {
+            "Mean Abnormal Return": 0.7264517812172315,
+            "Median Abnormal Return": 0.251546754048252,
+            "Standard Deviation": 6.098415848887088,
+            "T-statistic": 1.6462903828089166,
+            "P-value": 0.10135706878200257,
+            "Weighted Abnormal Return": 0.5469856225278855
+        },
+        "Carbon Intensity Analysis": {
+            "Correlation": -0.06844909139044948,
+            "Correlation P-value": 0.34549067496897823,
+            "Regression": {
+                "Coefficient": -0.1525742021675417,
+                "P-value": 0.34549067496897656,
+                "R-squared": 0.004685278112178115
+            }
+        },
+        "Size Effect Analysis": {
+            "Returns by Size": {
+                "Small": {
+                    "mean": 2.8486933052434193,
+                    "count": 49
+                },
+                "Medium": {
+                    "mean": -1.1734374103449075,
+                    "count": 46
+                },
+                "Large": {
+                    "mean": 1.1290656544080802,
+                    "count": 48
+                },
+                "Very Large": {
+                    "mean": -0.021889839169967427,
+                    "count": 48
+                }
+            }
+        }
+    },
+    "Brown Acquirer - Green Target": {
+        "Day Range": "3",
+        "Sample Characteristics": {
+            "Sample Size": 137,
+            "Positive Returns Count": 70,
+            "Negative Returns Count": 67,
+            "Win Ratio": 0.5109489051094891
+        },
+        "Return Statistics": {
+            "Mean Abnormal Return": 0.8114030151570665,
+            "Median Abnormal Return": 0.08813591276402732,
+            "Standard Deviation": 6.24916951824319,
+            "T-statistic": 1.519758548930591,
+            "P-value": 0.13089310838370102,
+            "Weighted Abnormal Return": 0.8136674240623679
+        },
+        "Carbon Intensity Analysis": {
+            "Correlation": -0.17620353893472063,
+            "Correlation P-value": 0.039431394036026475,
+            "Regression": {
+                "Coefficient": -0.6169163720442513,
+                "P-value": 0.03943139403602634,
+                "R-squared": 0.03104768713311934
+            }
+        },
+        "Size Effect Analysis": {
+            "Returns by Size": {
+                "Small": {
+                    "mean": 2.1593923274859645,
+                    "count": 35
+                },
+                "Medium": {
+                    "mean": -0.4513846098933283,
+                    "count": 34
+                },
+                "Large": {
+                    "mean": 1.2402649921147302,
+                    "count": 34
+                },
+                "Very Large": {
+                    "mean": 0.25769260644063674,
+                    "count": 34
+                }
+            }
+        }
+    }
+}

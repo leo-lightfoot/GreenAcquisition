@@ -211,13 +211,14 @@ def calculate_abnormal_returns(groups, benchmark_data):
     return results
 
 
-def perform_statistical_analysis(results):
-    """Perform statistical analysis on abnormal returns."""
-    stats_results = {}
+def perform_comprehensive_analysis(results):
+    """Perform comprehensive analysis combining statistical and scenario analysis."""
+    analysis_results = {}
+    
+    first_group = next(iter(results.values()), None)
+    day_range = first_group.attrs.get('day_range', 'unknown') if first_group is not None else 'unknown'
     
     for group_name, group_data in results.items():
-        print(f"Performing statistical analysis for: {group_name}")
-        
         abnormal_returns = group_data['Abnormal_Return'].dropna()
         
         if len(abnormal_returns) == 0:
@@ -235,7 +236,8 @@ def perform_statistical_analysis(results):
         # Market cap weighted return
         weighted_ar = group_data['Weighted_Abnormal_Return'].sum() if 'Weighted_Abnormal_Return' in group_data.columns else None
         
-        # Correlation with log carbon intensity
+        # Carbon intensity analysis
+        carbon_intensity_analysis = {}
         if 'Log_Carbon_Intensity' in group_data.columns:
             log_carbon_intensity = group_data['Log_Carbon_Intensity'].fillna(0)
             abnormal_returns_for_corr = group_data['Abnormal_Return'].fillna(0)
@@ -245,93 +247,72 @@ def perform_statistical_analysis(results):
             
             if len(valid_carbon) > 1:
                 correlation, p_val_corr = stats.pearsonr(valid_carbon, valid_ar)
-            else:
-                correlation, p_val_corr = None, None
-        else:
-            correlation, p_val_corr = None, None
-        
-        # Regression analysis with log carbon intensity
-        regression_results = None
-        if 'Log_Carbon_Intensity' in group_data.columns and len(group_data) > 2:
-            try:
-                valid_data = group_data.dropna(subset=['Log_Carbon_Intensity', 'Abnormal_Return'])
-                if len(valid_data) > 2:
-                    X = sm.add_constant(valid_data['Log_Carbon_Intensity'])
-                    Y = valid_data['Abnormal_Return']
+                carbon_intensity_analysis['Correlation'] = float(correlation)
+                carbon_intensity_analysis['Correlation P-value'] = float(p_val_corr)
+            
+            # Regression analysis
+            if len(valid_data) > 2:
+                try:
+                    X = sm.add_constant(valid_carbon)
+                    Y = valid_ar
                     model = sm.OLS(Y, X).fit()
-                    regression_results = {
+                    carbon_intensity_analysis['Regression'] = {
                         'Coefficient': float(model.params.iloc[1]) if len(model.params) > 1 else None,
                         'P-value': float(model.pvalues.iloc[1]) if len(model.pvalues) > 1 else None,
                         'R-squared': float(model.rsquared)
                     }
-                else:
-                    print(f"Warning: Not enough valid data for regression in {group_name}.")
-            except Exception as e:
-                print(f"Error in regression analysis for {group_name}: {e}")
+                except Exception as e:
+                    print(f"Error in regression analysis for {group_name}: {e}")
         
-        # Store results
-        day_range = group_data.attrs.get('day_range', 'unknown')
-        stats_results[group_name] = {
+        # Additional analyses
+        positive_ar_count = int(sum(abnormal_returns > 0))
+        negative_ar_count = int(sum(abnormal_returns < 0))
+        win_ratio = positive_ar_count / len(abnormal_returns)
+        
+        # Size effect analysis
+        size_effect = {}
+        if 'Annual_Sales (Million $)' in group_data.columns:
+            sales = group_data['Annual_Sales (Million $)'].fillna(0)
+            size_quartiles = pd.qcut(sales, 4, labels=['Small', 'Medium', 'Large', 'Very Large'])
+            size_returns = pd.DataFrame({
+                'Size': size_quartiles,
+                'Return': abnormal_returns
+            }).groupby('Size', observed=True)['Return'].agg(['mean', 'count']).to_dict('index')
+            size_effect['Returns by Size'] = size_returns
+        
+        # Store all results
+        analysis_results[group_name] = {
             'Day Range': day_range,
-            'Sample Size': int(len(abnormal_returns)),
-            'Mean Abnormal Return': float(mean_ar),
-            'Median Abnormal Return': float(median_ar),
-            'Standard Deviation': float(std_ar),
-            'T-statistic': float(t_stat),
-            'P-value': float(p_value),
-            'Weighted Abnormal Return': float(weighted_ar) if weighted_ar is not None else None,
-            'Correlation with Log Carbon Intensity': float(correlation) if correlation is not None else None,
-            'Correlation P-value': float(p_val_corr) if p_val_corr is not None else None,
-            'Regression': regression_results
+            'Sample Characteristics': {
+                'Sample Size': int(len(abnormal_returns)),
+                'Positive Returns Count': positive_ar_count,
+                'Negative Returns Count': negative_ar_count,
+                'Win Ratio': float(win_ratio)
+            },
+            'Return Statistics': {
+                'Mean Abnormal Return': float(mean_ar),
+                'Median Abnormal Return': float(median_ar),
+                'Standard Deviation': float(std_ar),
+                'T-statistic': float(t_stat),
+                'P-value': float(p_value),
+                'Weighted Abnormal Return': float(weighted_ar) if weighted_ar is not None else None
+            },
+            'Carbon Intensity Analysis': carbon_intensity_analysis,
+            'Size Effect Analysis': size_effect
         }
+        
+        # Add volatility analysis if 10-day window
+        if day_range == '10':
+            daily_volatility = group_data['Abnormal_Return'].std() / np.sqrt(10)
+            analysis_results[group_name]['Volatility Analysis'] = {
+                'Daily Volatility': float(daily_volatility),
+                'Annualized Volatility': float(daily_volatility * np.sqrt(252))
+            }
     
-    return stats_results
+    return analysis_results
 
 
-def analyze_scenarios(results, stats_results):
-    """Analyze scenarios for different deal types."""
-    scenario_analysis = {}
-    
-    first_group = next(iter(results.values()), None)
-    day_range = first_group.attrs.get('day_range', 'unknown') if first_group is not None else 'unknown'
-    
-    # Scenario 1: All M&A deals
-    if 'All Deals' in results:
-        abnormal_returns = pd.to_numeric(results['All Deals']['Abnormal_Return'], errors='coerce')
-        scenario_analysis['All M&A Deals'] = {
-            'Day Range': day_range,
-            'Results Summary': stats_results.get('All Deals', {}),
-            'Sample Size': int(len(results['All Deals'])),
-            'Positive AR Count': int(sum(abnormal_returns > 0)),
-            'Negative AR Count': int(sum(abnormal_returns < 0))
-        }
-    
-    # Scenario 2: Any company acquiring a green target
-    if 'Green Target' in results:
-        abnormal_returns = pd.to_numeric(results['Green Target']['Abnormal_Return'], errors='coerce')
-        scenario_analysis['Any Company Acquiring Green Target'] = {
-            'Day Range': day_range,
-            'Results Summary': stats_results.get('Green Target', {}),
-            'Sample Size': int(len(results['Green Target'])),
-            'Positive AR Count': int(sum(abnormal_returns > 0)),
-            'Negative AR Count': int(sum(abnormal_returns < 0))
-        }
-    
-    # Scenario 3: Brown company acquiring a green target
-    if 'Brown Acquirer - Green Target' in results:
-        abnormal_returns = pd.to_numeric(results['Brown Acquirer - Green Target']['Abnormal_Return'], errors='coerce')
-        scenario_analysis['Brown Company Acquiring Green Target'] = {
-            'Day Range': day_range,
-            'Results Summary': stats_results.get('Brown Acquirer - Green Target', {}),
-            'Sample Size': int(len(results['Brown Acquirer - Green Target'])),
-            'Positive AR Count': int(sum(abnormal_returns > 0)),
-            'Negative AR Count': int(sum(abnormal_returns < 0))
-        }
-    
-    return scenario_analysis
-
-
-def save_results(results, stats_results, scenario_analysis, output_dir):
+def save_results(results, output_dir):
     """Save analysis results to output directory."""
     os.makedirs(output_dir, exist_ok=True)
     
@@ -340,15 +321,11 @@ def save_results(results, stats_results, scenario_analysis, output_dir):
     
     # Save datasets with abnormal returns
     for group_name, group_data in results.items():
-        for col in group_data.columns:
-            if col not in ['Announce Date', group_data.attrs.get('minus_date_col', ''), 
-                          group_data.attrs.get('plus_date_col', ''), 'Ticker', 'Acquirer Name', 
-                          'Acquirer_Classification', 'Target Name', 'Target_Classification', 
-                          'Seller Name', 'Deal Status']:
-                group_data[col] = pd.to_numeric(group_data[col], errors='coerce')
-        
         file_name = f"{group_name.replace(' ', '_').lower()}_{day_range}day_results.csv"
         group_data.to_csv(os.path.join(output_dir, file_name), index=False, float_format='%.6f')
+    
+    # Perform comprehensive analysis
+    analysis_results = perform_comprehensive_analysis(results)
     
     # Custom JSON encoder for numpy types
     class NumpyEncoder(json.JSONEncoder):
@@ -363,13 +340,9 @@ def save_results(results, stats_results, scenario_analysis, output_dir):
                 return obj.tolist()
             return json.JSONEncoder.default(self, obj)
     
-    # Save statistical analysis results
-    with open(os.path.join(output_dir, f'statistical_analysis_{day_range}day.json'), 'w') as f:
-        json.dump(stats_results, f, indent=4, cls=NumpyEncoder)
-    
-    # Save scenario analysis results
-    with open(os.path.join(output_dir, f'scenario_analysis_{day_range}day.json'), 'w') as f:
-        json.dump(scenario_analysis, f, indent=4, cls=NumpyEncoder)
+    # Save comprehensive analysis results
+    with open(os.path.join(output_dir, f'comprehensive_analysis_{day_range}day.json'), 'w') as f:
+        json.dump(analysis_results, f, indent=4, cls=NumpyEncoder)
     
     # Generate visualizations
     create_visualizations(results, output_dir, day_range)
@@ -475,14 +448,8 @@ def main():
     # Calculate abnormal returns
     results = calculate_abnormal_returns(groups, benchmark_data)
     
-    # Perform statistical analysis
-    stats_results = perform_statistical_analysis(results)
-    
-    # Analyze scenarios
-    scenario_analysis = analyze_scenarios(results, stats_results)
-    
     # Save results
-    save_results(results, stats_results, scenario_analysis, output_dir)
+    save_results(results, output_dir)
     
     print(f"Event study analysis completed. Results saved to: {output_dir}")
 

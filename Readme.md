@@ -15,6 +15,8 @@ This project analyzes how the carbon intensity of acquiring companies affects th
 3. **Sales Data**: Obtained from Bloomberg's Equity section, using the year prior to the announcement date as the reference year.
    
 4. **Stock Price Data**: Retrieved from Yahoo Finance API for specific trading days before and after M&A announcements.
+   
+5. **Benchmark Data**: XLE (Energy Select Sector SPDR Fund) data between 2014 to 2024 from Bloomberg, used as a proxy for market benchmark for calculating abnormal returns.
 
 ## Project Structure
 
@@ -46,6 +48,7 @@ The data processing follows a comprehensive multi-stage pipeline:
    - Obtain GHG emissions data from WRDS
    - Gather annual sales data from Bloomberg's Equity section
    - Fetch stock prices from Yahoo Finance for specific time windows around announcement dates
+   - Collect XLE benchmark data for the study period
 
 2. **Data Merging**: 
    - Combine data from all three primary sources (M&A, emissions, sales)
@@ -60,11 +63,28 @@ The data processing follows a comprehensive multi-stage pipeline:
 4. **Stock Price Analysis**:
    - Retrieve stock prices for specific trading days before and after announcement dates
    - Calculate returns over the event windows
+   - Compute abnormal returns using XLE benchmark data
 
 5. **Standardization**: 
    - Clean and standardize data formats for analysis
    - Ensure consistent naming conventions and data types
    - Add proper denominations to numeric columns
+
+6. **Event Study Analysis**:
+   - Calculate abnormal returns for different acquisition scenarios
+   - Perform statistical analysis including:
+     - Mean and median abnormal returns
+     - T-tests for significance
+     - Market cap-weighted returns
+     - Correlation analysis with carbon intensity
+   - Create visualizations for:
+     - Abnormal returns distribution
+     - Carbon intensity vs. returns scatter plots
+     - Time series of cumulative abnormal returns
+   - Analyze specific scenarios:
+     - Brown acquirers acquiring green targets
+     - Green targets across all acquisitions
+     - All deals in the sample
 
 ## Methodology
 
@@ -72,7 +92,7 @@ The data processing follows a comprehensive multi-stage pipeline:
 
 1. **Acquirer Classification**:
    - Calculate carbon intensity as the ratio of GHG emissions to annual sales
-   - Companies in the top quantile (lowest emissions) are classified as "Green"
+   - Companies in the top quartile (25% lowest emissions) are classified as "Green" 
    - Remaining companies are classified as "Brown"
 
 2. **Target Classification**:
@@ -175,6 +195,126 @@ python SCRIPTS/data_preprocessing/standardize_stock_data.py master_data_with_sto
 
 **Output:**
 - Standardized CSV files in the `data/3_processed` directory (e.g., `standardized_stock_data_10day.csv`)
+
+### Data Analysis
+
+#### `event_study_analysis.py`
+
+This script performs comprehensive event study analysis on M&A announcements, focusing on abnormal returns and their relationship with carbon intensity.
+
+**Key Features:**
+- Calculates abnormal returns using XLE benchmark data
+- Performs statistical analysis including t-tests and correlation studies
+- Creates visualizations for returns distribution and carbon intensity relationships
+- Handles data winsorization to manage outliers
+- Supports both 3-day and 10-day event windows
+
+**Analysis Components:**
+1. **Data Loading and Preprocessing**:
+   - Loads standardized stock data and XLE benchmark data
+   - Handles date conversions and numeric data standardization
+   - Winsorizes returns to manage outliers
+
+2. **Analysis Groups**:
+   - All M&A deals
+   - Deals involving green targets
+   - Specific focus on brown acquirers acquiring green targets
+
+3. **Statistical Analysis**:
+   - Mean and median abnormal returns
+   - Standard deviation of returns
+   - T-tests for significance
+   - Market cap-weighted returns
+   - Correlation analysis with carbon intensity
+   - Regression analysis with log-transformed carbon intensity
+
+4. **Visualization Generation**:
+   - Distribution plots of abnormal returns
+   - Scatter plots of carbon intensity vs. returns
+   - Bar charts comparing mean returns across groups
+
+**Usage:**
+```bash
+python SCRIPTS/data_analysis/event_study_analysis.py standardized_stock_data_10day.csv
+```
+or
+```bash
+python SCRIPTS/data_analysis/event_study_analysis.py standardized_stock_data_3day.csv
+```
+
+**Output Directory Structure:**
+```
+results/
+└── event_study_[3/10]day_[timestamp]/
+    ├── all_deals_[3/10]day_results.csv
+    ├── green_target_[3/10]day_results.csv
+    ├── brown_acquirer_green_target_[3/10]day_results.csv
+    ├── statistical_analysis_[3/10]day.json
+    ├── scenario_analysis_[3/10]day.json
+    └── visualizations/
+        ├── all_deals_[3/10]day_ar_distribution.png
+        ├── green_target_[3/10]day_ar_distribution.png
+        ├── brown_acquirer_green_target_[3/10]day_ar_distribution.png
+        ├── all_deals_[3/10]day_carbon_vs_ar.png
+        ├── green_target_[3/10]day_carbon_vs_ar.png
+        ├── brown_acquirer_green_target_[3/10]day_carbon_vs_ar.png
+        └── mean_abnormal_returns_comparison_[3/10]day.png
+```
+
+## Results
+
+The analysis results are organized in timestamped directories under the `results/` folder, with separate directories for 3-day and 10-day event windows. Each results directory contains:
+
+1. **CSV Files**:
+   - Detailed results for each analysis group (all deals, green targets, brown acquirers of green targets)
+   - Contains abnormal returns, benchmark returns, and carbon intensity metrics
+   - Includes market cap-weighted returns and log-transformed carbon intensity
+
+2. **JSON Files**:
+   - `statistical_analysis_[3/10]day.json`: Comprehensive statistical results including:
+     - Mean and median abnormal returns
+     - T-test statistics and p-values
+     - Correlation coefficients with carbon intensity
+     - Regression analysis results
+   - `scenario_analysis_[3/10]day.json`: Summary statistics for different acquisition scenarios:
+     - Sample sizes
+     - Count of positive and negative abnormal returns
+     - Day range information
+
+3. **Visualizations**:
+   - Distribution plots showing the spread of abnormal returns
+   - Scatter plots illustrating the relationship between carbon intensity and returns
+   - Bar charts comparing mean returns across different acquisition scenarios
+
+The results are designed to help understand:
+- The impact of M&A announcements on shareholder value
+- The relationship between carbon intensity and market performance
+- The specific effects of brown companies acquiring green targets
+- The overall market reaction to different types of energy sector acquisitions
+
+## Results Summary
+
+The event study analysis reveals several key findings about the market reaction to green acquisitions in the energy sector:
+
+1. **Overall Market Impact**:
+   - Positive but modest abnormal returns across all deals (+0.097% in 3-day window, +0.342% in 10-day window)
+   - Higher volatility in longer event windows (6.69% vs 9.87% standard deviation)
+
+2. **Green Target Effect**:
+   - More pronounced positive returns for green target acquisitions (+0.726% in 3-day window)
+   - Larger deals show better performance (market cap-weighted returns up to +1.391% in 10-day window)
+
+3. **Brown-to-Green Transitions**:
+   - Strongest positive reaction for brown companies acquiring green targets
+   - Short-term returns of +0.811% (3-day) and +0.783% (10-day)
+   - Market cap-weighted returns reach +2.245% in the 10-day window
+
+4. **Carbon Intensity Impact**:
+   - Significant negative correlation between carbon intensity and returns
+   - Lower carbon intensity acquirers see better market reaction
+   - Effect is stronger in the short term (3-day window)
+
+For detailed analysis and findings, please refer to the [ANALYSIS.md](ANALYSIS.md) file.
 
 ## Data Files
 

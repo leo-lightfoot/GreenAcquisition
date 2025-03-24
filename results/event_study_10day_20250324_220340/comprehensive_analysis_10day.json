@@ -1,0 +1,152 @@
+{
+    "All Deals": {
+        "Day Range": "10",
+        "Sample Characteristics": {
+            "Sample Size": 827,
+            "Positive Returns Count": 421,
+            "Negative Returns Count": 406,
+            "Win Ratio": 0.5090689238210399
+        },
+        "Return Statistics": {
+            "Mean Abnormal Return": 0.34192537308442483,
+            "Median Abnormal Return": 0.19339708586399063,
+            "Standard Deviation": 9.870797612305532,
+            "T-statistic": 0.9961662800027018,
+            "P-value": 0.31946108965751213,
+            "Weighted Abnormal Return": -0.4344999023154371
+        },
+        "Carbon Intensity Analysis": {
+            "Correlation": -0.031030892698711815,
+            "Correlation P-value": 0.37251117207982837,
+            "Regression": {
+                "Coefficient": -0.1379419264089748,
+                "P-value": 0.372511172079828,
+                "R-squared": 0.0009629163016787734
+            }
+        },
+        "Size Effect Analysis": {
+            "Returns by Size": {
+                "Small": {
+                    "mean": 0.7287506818065628,
+                    "count": 208
+                },
+                "Medium": {
+                    "mean": 0.4536116207616516,
+                    "count": 206
+                },
+                "Large": {
+                    "mean": 0.26228819428796946,
+                    "count": 206
+                },
+                "Very Large": {
+                    "mean": -0.07866289939694524,
+                    "count": 207
+                }
+            }
+        },
+        "Volatility Analysis": {
+            "Daily Volatility": 3.121420277743716,
+            "Annualized Volatility": 49.551010753344215
+        }
+    },
+    "Green Target": {
+        "Day Range": "10",
+        "Sample Characteristics": {
+            "Sample Size": 191,
+            "Positive Returns Count": 97,
+            "Negative Returns Count": 94,
+            "Win Ratio": 0.5078534031413613
+        },
+        "Return Statistics": {
+            "Mean Abnormal Return": 0.58111671822706,
+            "Median Abnormal Return": 0.2313889524875612,
+            "Standard Deviation": 9.839701563848118,
+            "T-statistic": 0.8162028876860192,
+            "P-value": 0.4154062157284091,
+            "Weighted Abnormal Return": 1.3912694509570103
+        },
+        "Carbon Intensity Analysis": {
+            "Correlation": -0.046617184770050286,
+            "Correlation P-value": 0.520822652780434,
+            "Regression": {
+                "Coefficient": -0.17348592872088797,
+                "P-value": 0.5208226527804354,
+                "R-squared": 0.0021731619158846804
+            }
+        },
+        "Size Effect Analysis": {
+            "Returns by Size": {
+                "Small": {
+                    "mean": 1.4772534644123843,
+                    "count": 49
+                },
+                "Medium": {
+                    "mean": -0.4666374939618549,
+                    "count": 46
+                },
+                "Large": {
+                    "mean": 0.27983523180132547,
+                    "count": 48
+                },
+                "Very Large": {
+                    "mean": 0.9716897296029862,
+                    "count": 48
+                }
+            }
+        },
+        "Volatility Analysis": {
+            "Daily Volatility": 3.1115868438080767,
+            "Annualized Volatility": 49.3949098289793
+        }
+    },
+    "Brown Acquirer - Green Target": {
+        "Day Range": "10",
+        "Sample Characteristics": {
+            "Sample Size": 137,
+            "Positive Returns Count": 71,
+            "Negative Returns Count": 66,
+            "Win Ratio": 0.5182481751824818
+        },
+        "Return Statistics": {
+            "Mean Abnormal Return": 0.7832067924708881,
+            "Median Abnormal Return": 0.9538152825722271,
+            "Standard Deviation": 9.320467751940814,
+            "T-statistic": 0.9835558383859124,
+            "P-value": 0.3270804670894747,
+            "Weighted Abnormal Return": 2.244713384483548
+        },
+        "Carbon Intensity Analysis": {
+            "Correlation": -0.12076492341699842,
+            "Correlation P-value": 0.15980845836836785,
+            "Regression": {
+                "Coefficient": -0.6323463210416024,
+                "P-value": 0.1598084583683689,
+                "R-squared": 0.014584166727913517
+            }
+        },
+        "Size Effect Analysis": {
+            "Returns by Size": {
+                "Small": {
+                    "mean": 0.2918639981957079,
+                    "count": 35
+                },
+                "Medium": {
+                    "mean": -0.3671470368986553,
+                    "count": 34
+                },
+                "Large": {
+                    "mean": 1.4249875969130696,
+                    "count": 34
+                },
+                "Very Large": {
+                    "mean": 1.7975738703285822,
+                    "count": 34
+                }
+            }
+        },
+        "Volatility Analysis": {
+            "Daily Volatility": 2.947390695428223,
+            "Annualized Volatility": 46.78837677989278
+        }
+    }
+}
