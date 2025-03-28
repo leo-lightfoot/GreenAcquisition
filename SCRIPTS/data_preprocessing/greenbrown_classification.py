@@ -3,17 +3,17 @@ import numpy as np
 import os
 
 def classify_by_carbon_intensity(df):
-    """Classify acquirers based on their carbon intensity (GHG emissions / Annual Sales)."""
+    # Classify companies based on carbon intensity (GHG/Sales), using lowest 25% as green threshold
     df['Carbon_Intensity'] = df['Acquirer_GHG_Emissions'] / df['Annual_Sales']
     df['Carbon_Intensity'] = df['Carbon_Intensity'].round(4)
-    percentile_25th = df['Carbon_Intensity'].quantile(0.25)  # Use lowest 25% as green threshold
+    percentile_25th = df['Carbon_Intensity'].quantile(0.25)
     df['Acquirer_Classification'] = df['Carbon_Intensity'].apply(
         lambda x: 'Green' if x <= percentile_25th else 'Brown'
     )
     return df, percentile_25th
 
 def classify_target_by_keywords(target_name):
-    """Classify targets based on keywords in their names."""
+    # Classify targets as Green/Brown/Neutral based on keywords in their names
     if pd.isna(target_name):
         return 'Unknown'
         
@@ -40,14 +40,14 @@ def classify_target_by_keywords(target_name):
         return 'Neutral'
 
 def format_carbon_intensity(df):
-    """Format carbon intensity values for better readability."""
-    df['Carbon_Intensity'] = df['Carbon_Intensity'].replace([np.inf, -np.inf], np.nan)  # Handle infinity values
+    # Format carbon intensity values and handle infinity/nan values
+    df['Carbon_Intensity'] = df['Carbon_Intensity'].replace([np.inf, -np.inf], np.nan)
     mask = df['Carbon_Intensity'].notna()
     df.loc[mask, 'Carbon_Intensity'] = df.loc[mask, 'Carbon_Intensity'].round(4)
     return df
 
 def main():
-    """Main function to classify companies as Green or Brown based on carbon intensity."""
+    # Process and classify companies based on carbon intensity and target names
     input_file = "data/1_raw/master_data_merged.csv"
     output_dir = "data/2_interim"
     output_file = f"{output_dir}/master_data_classified.csv"
@@ -56,20 +56,18 @@ def main():
     
     try:
         df = pd.read_csv(input_file)
-        
         df_all = df.copy()
         
         required_columns = ['Target Name', 'Ticker', 'Acquirer Name', 'Acquirer_GHG_Emissions', 'Annual_Sales']
         missing_columns = [col for col in required_columns if col not in df_all.columns]
         
         if missing_columns:
-            return  # Exit if required columns are missing
+            return
         
         if 'Target Name' in df_all.columns:
             df_all['Target_Classification'] = df_all['Target Name'].apply(classify_target_by_keywords)
         
         if 'Acquirer_GHG_Emissions' in df_all.columns and 'Annual_Sales' in df_all.columns:
-            # Filter rows with valid data for classification
             df_carbon = df_all.dropna(subset=['Acquirer_GHG_Emissions', 'Annual_Sales'])
             df_carbon = df_carbon[df_carbon['Annual_Sales'] > 0]
             
@@ -77,7 +75,6 @@ def main():
                 df_carbon, percentile_25th = classify_by_carbon_intensity(df_carbon)
                 
                 if 'Ticker' in df_carbon.columns:
-                    # Create mapping dictionaries for efficient application
                     classification_map = df_carbon.set_index('Ticker')['Acquirer_Classification'].to_dict()
                     carbon_intensity_map = df_carbon.set_index('Ticker')['Carbon_Intensity'].to_dict()
                     
@@ -86,7 +83,7 @@ def main():
                         df_all['Carbon_Intensity'] = df_all['Ticker'].map(carbon_intensity_map)
                         df_all = format_carbon_intensity(df_all)
         
-        # Specify the desired columns in the required order
+        # Define output column order
         column_order = [
             'Announce Date', 'Reference_Year', 'Ticker', 'Acquirer Name',
             'Annual_Sales', 'Acquirer_GHG_Emissions', 'Carbon_Intensity',
@@ -94,18 +91,14 @@ def main():
             'Seller Name', 'Announced Total Value (mil.)', 'TV/EBITDA', 'Deal Status'
         ]
         
-        # Only include columns that exist in the DataFrame
         column_order = [col for col in column_order if col in df_all.columns]
-        
-        # Reorder the DataFrame
         df_all = df_all[column_order]
-        
         df_all.to_csv(output_file, index=False)
         
     except FileNotFoundError:
-        pass  # Silently fail if input file is missing
+        pass
     except Exception as e:
-        pass  # Silently fail on other errors
+        pass
 
 if __name__ == "__main__":
     main() 

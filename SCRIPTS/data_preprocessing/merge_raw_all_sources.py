@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 
 
 def parse_date(date_str):
-    """Parse date string into datetime object, handling multiple formats."""
+    # Parse date string into datetime, trying multiple formats
     if pd.isna(date_str):
         return None
         
@@ -24,7 +24,7 @@ def parse_date(date_str):
         return None
 
 def get_previous_year(date):
-    """Get the previous year for merging sales and emissions data."""
+    # Get previous year date for merging sales and emissions data
     if date is None:
         return None, None
     
@@ -36,7 +36,7 @@ def get_previous_year(date):
             new_year = date.year - 1
             new_month = date.month
             if date.month == 2 and date.day == 29:
-                new_day = 28  # Handle leap year
+                new_day = 28
             else:
                 new_day = date.day
                 
@@ -46,17 +46,15 @@ def get_previous_year(date):
             return None, None
 
 def load_ma_data(file_path):
-    """Load M&A data with tickers."""
+    # Load M&A data and prepare dates for merging
     try:
         df = pd.read_csv(file_path)
         df['Announce_Date_DT'] = df['Announce Date'].apply(parse_date)
         
-        # Get the previous year date and year
         df[['Reference_Date', 'Reference_Year']] = df['Announce_Date_DT'].apply(
             lambda date: pd.Series(get_previous_year(date))
         )
         
-        # Format reference date for GHG data
         df['GHG_Reference_Date'] = df['Reference_Year'].apply(
             lambda year: f"31-12-{year}" if pd.notna(year) else None
         )
@@ -67,12 +65,11 @@ def load_ma_data(file_path):
         raise
 
 def load_ghg_data(file_path):
-    """Load GHG emissions data."""
+    # Load GHG emissions data and handle duplicates
     try:
         df = pd.read_csv(file_path)
-        df = df[df['Ticker'].notna() & (df['Ticker'] != '')]  # Filter out empty tickers
+        df = df[df['Ticker'].notna() & (df['Ticker'] != '')]
         
-        # Average duplicate records
         df_grouped = df.groupby(['Ticker', 'periodenddate'])['GHG_Emissions'].mean().reset_index()
         df_grouped.rename(columns={'GHG_Emissions': 'Acquirer_GHG_Emissions'}, inplace=True)
         
@@ -82,7 +79,7 @@ def load_ghg_data(file_path):
         raise
 
 def load_sales_data(file_path):
-    """Load sales data."""
+    # Load sales data and handle duplicates
     try:
         df = pd.read_csv(file_path)
         df.rename(columns={
@@ -90,7 +87,6 @@ def load_sales_data(file_path):
             'Sales in Mn. Dollars': 'Annual_Sales'
         }, inplace=True)
         
-        # Average duplicate records for same ticker and year
         df_grouped = df.groupby(['Ticker', 'Year'])['Annual_Sales'].mean().reset_index()
         
         return df_grouped
@@ -99,9 +95,8 @@ def load_sales_data(file_path):
         raise
 
 def merge_all_data(ma_data, ghg_data, sales_data):
-    """Merge all three data sources."""
+    # Merge M&A, GHG, and sales data
     try:
-        # Merge M&A data with GHG data
         merged_df = pd.merge(
             ma_data,
             ghg_data,
@@ -110,7 +105,6 @@ def merge_all_data(ma_data, ghg_data, sales_data):
             how='left'
         )
         
-        # Merge with sales data
         merged_df = pd.merge(
             merged_df,
             sales_data,
@@ -119,10 +113,8 @@ def merge_all_data(ma_data, ghg_data, sales_data):
             how='left'
         )
         
-        # Remove rows with empty GHG emissions or sales
         merged_df = merged_df.dropna(subset=['Acquirer_GHG_Emissions', 'Annual_Sales'])
 
-        # Calculate Carbon Intensity
         mask = (merged_df['Acquirer_GHG_Emissions'].notna() & 
                 merged_df['Annual_Sales'].notna() & 
                 (merged_df['Annual_Sales'] > 0))
@@ -133,11 +125,9 @@ def merge_all_data(ma_data, ghg_data, sales_data):
             merged_df.loc[mask, 'Annual_Sales']
         )
         
-        # Remove redundant columns
         columns_to_drop = ['GHG_Reference_Date', 'periodenddate', 'Company Name', 'Year']
         merged_df.drop(columns=columns_to_drop, inplace=True, errors='ignore')
         
-        # Specify the desired columns in the required order
         column_order = [
             'Announce Date', 'Reference_Year', 'Ticker', 'Acquirer Name',
             'Annual_Sales', 'Acquirer_GHG_Emissions', 'Carbon_Intensity',
@@ -145,10 +135,7 @@ def merge_all_data(ma_data, ghg_data, sales_data):
             'TV/EBITDA', 'Deal Status'
         ]
         
-        # Only include columns that exist
         column_order = [col for col in column_order if col in merged_df.columns]
-        
-        # Reorder the DataFrame
         merged_df = merged_df[column_order]
         
         return merged_df
@@ -157,31 +144,25 @@ def merge_all_data(ma_data, ghg_data, sales_data):
         raise
 
 def main():
-    """Main function to merge all three data sources."""
-    # Define file paths
+    # Merge M&A, GHG, and sales data into a single dataset
     ma_data_file = "data/1_raw/bloomberg_ma_with_tickers.csv"
     ghg_data_file = "data/1_raw/ghg.csv"
     sales_data_file = "data/1_raw/sales_data_bbg.csv"
     output_dir = "data/1_raw"
     output_file = f"{output_dir}/master_data_merged.csv"
     
-    # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     
     try:
-        # Load all data sources
         ma_data = load_ma_data(ma_data_file)
         ghg_data = load_ghg_data(ghg_data_file)
         sales_data = load_sales_data(sales_data_file)
         
-        # Merge all data sources
         merged_data = merge_all_data(ma_data, ghg_data, sales_data)
-        
-        # Save the merged dataset to a CSV file
         merged_data.to_csv(output_file, index=False)
         
     except Exception:
-        pass  # Silent failure in production
+        pass
 
 if __name__ == "__main__":
     main() 
