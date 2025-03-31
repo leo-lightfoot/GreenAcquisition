@@ -137,7 +137,7 @@ python SCRIPTS/data_collection/fetch_stock_prices.py --days_before 3 --days_afte
 ### Data Preprocessing
 
 #### `merge_raw_all_sources.py`
-
+  
 This script merges data from multiple sources to create a comprehensive dataset for analysis.
 
 **Data Sources:**
@@ -354,3 +354,4 @@ For detailed analysis and findings, please refer to the [ANALYSIS.md](ANALYSIS.m
 ## License
 
 This project is licensed under the terms of the LICENSE file included in this repository.
+## Last updated on 31st March 2025
