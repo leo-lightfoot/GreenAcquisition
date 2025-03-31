@@ -1,6 +1,6 @@
 # GreenAcquisition
 
-This repository contains scripts and data for analyzing the environmental impact of mergers and acquisitions in the energy sector, with a focus on green vs. brown company classifications based on carbon intensity.
+This repository contains scripts and data for analyzing the impact of mergers and acquisitions in the energy sector, with a focus on green vs. brown company classifications based on carbon intensity.
 
 ## Project Overview
 
@@ -35,8 +35,7 @@ GreenAcquisition/
 │   ├── 1_raw/      # Original unprocessed data
 │   ├── 2_interim/  # Intermediate data that has been transformed
 │   └── 3_processed/# Final processed data ready for analysis
-│
-└── logs/           # Log files from script executions
+
 ```
 
 ## Data Processing Pipeline

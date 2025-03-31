@@ -1,0 +1,62 @@
+{
+    "All Deals": {
+        "Breusch_Pagan": {
+            "LM_statistic": 5.249667134611289,
+            "p_value": 0.021950969744033724,
+            "F_statistic": 5.270402064848976,
+            "F_p_value": 0.021940699276705503
+        },
+        "White": {
+            "LM_statistic": 10.317493405736391,
+            "p_value": 0.005748900252684391,
+            "F_statistic": 5.204912659306869,
+            "F_p_value": 0.00567123378910603
+        },
+        "Robust_Standard_Errors": {
+            "Coefficient": -0.0579370853209462,
+            "Std_Error": 0.09587986418019753,
+            "P_value": 0.5456658136667696,
+            "R_squared": 0.0003748150632528757
+        }
+    },
+    "Green Target": {
+        "Breusch_Pagan": {
+            "LM_statistic": 1.1695438079594638,
+            "p_value": 0.2794949955094206,
+            "F_statistic": 1.1644541859118922,
+            "F_p_value": 0.2819116735762001
+        },
+        "White": {
+            "LM_statistic": 2.986438911470586,
+            "p_value": 0.22464824498055155,
+            "F_statistic": 1.4931123222517648,
+            "F_p_value": 0.22731025501919755
+        },
+        "Robust_Standard_Errors": {
+            "Coefficient": -0.152574225671178,
+            "Std_Error": 0.15167088326043643,
+            "P_value": 0.3144367659147276,
+            "R_squared": 0.004685279532354536
+        }
+    },
+    "Brown Acquirer - Green Target": {
+        "Breusch_Pagan": {
+            "LM_statistic": 6.306629238374712,
+            "p_value": 0.012028731959607934,
+            "F_statistic": 6.5144463121504845,
+            "F_p_value": 0.011812999576925495
+        },
+        "White": {
+            "LM_statistic": 12.085878080540706,
+            "p_value": 0.0023745696918966285,
+            "F_statistic": 6.482484277625002,
+            "F_p_value": 0.0020544479558577194
+        },
+        "Robust_Standard_Errors": {
+            "Coefficient": -0.6169164386882938,
+            "Std_Error": 0.39123980853240575,
+            "P_value": 0.11483595779587956,
+            "R_squared": 0.031047695247561014
+        }
+    }
+}

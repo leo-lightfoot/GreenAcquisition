@@ -11,8 +11,8 @@
             "Mean Abnormal Return": 0.34192537308442483,
             "Median Abnormal Return": 0.19339708586399063,
             "Standard Deviation": 9.870797612305532,
-            "T-statistic": 0.9961662800027018,
-            "P-value": 0.31946108965751213,
+            "T-statistic": 0.9955638207519497,
+            "P-value": 0.3194621207687339,
             "Weighted Abnormal Return": -0.4344999023154371
         },
         "Carbon Intensity Analysis": {
@@ -20,8 +20,9 @@
             "Correlation P-value": 0.37251117207982837,
             "Regression": {
                 "Coefficient": -0.1379419264089748,
-                "P-value": 0.372511172079828,
-                "R-squared": 0.0009629163016787734
+                "P-value": 0.36905302980654564,
+                "R-squared": 0.0009629163016787734,
+                "Robust Standard Error": 0.15356765015860702
             }
         },
         "Size Effect Analysis": {
@@ -61,8 +62,8 @@
             "Mean Abnormal Return": 0.58111671822706,
             "Median Abnormal Return": 0.2313889524875612,
             "Standard Deviation": 9.839701563848118,
-            "T-statistic": 0.8162028876860192,
-            "P-value": 0.4154062157284091,
+            "T-statistic": 0.8140634268956286,
+            "P-value": 0.41560861627871704,
             "Weighted Abnormal Return": 1.3912694509570103
         },
         "Carbon Intensity Analysis": {
@@ -70,8 +71,9 @@
             "Correlation P-value": 0.520822652780434,
             "Regression": {
                 "Coefficient": -0.17348592872088797,
-                "P-value": 0.5208226527804354,
-                "R-squared": 0.0021731619158846804
+                "P-value": 0.5009362059882985,
+                "R-squared": 0.0021731619158846804,
+                "Robust Standard Error": 0.25777330947803156
             }
         },
         "Size Effect Analysis": {
@@ -111,8 +113,8 @@
             "Mean Abnormal Return": 0.7832067924708881,
             "Median Abnormal Return": 0.9538152825722271,
             "Standard Deviation": 9.320467751940814,
-            "T-statistic": 0.9835558383859124,
-            "P-value": 0.3270804670894747,
+            "T-statistic": 0.9799596441204088,
+            "P-value": 0.3271060394774651,
             "Weighted Abnormal Return": 2.244713384483548
         },
         "Carbon Intensity Analysis": {
@@ -120,8 +122,9 @@
             "Correlation P-value": 0.15980845836836785,
             "Regression": {
                 "Coefficient": -0.6323463210416024,
-                "P-value": 0.1598084583683689,
-                "R-squared": 0.014584166727913517
+                "P-value": 0.25507330557729724,
+                "R-squared": 0.014584166727913517,
+                "Robust Standard Error": 0.5556094411305553
             }
         },
         "Size Effect Analysis": {

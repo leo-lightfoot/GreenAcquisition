@@ -230,8 +230,12 @@ def perform_comprehensive_analysis(results):
         median_ar = abnormal_returns.median()
         std_ar = abnormal_returns.std()
         
-        # T-test
-        t_stat, p_value = stats.ttest_1samp(abnormal_returns, 0)
+        # T-test with robust standard errors
+        # Using statsmodels for robust t-test
+        X = sm.add_constant(np.ones(len(abnormal_returns)))
+        model = sm.OLS(abnormal_returns, X).fit(cov_type='HC3')  # Using HC3 robust standard errors
+        t_stat = model.tvalues[0]
+        p_value = model.pvalues[0]
         
         # Market cap weighted return
         weighted_ar = group_data['Weighted_Abnormal_Return'].sum() if 'Weighted_Abnormal_Return' in group_data.columns else None
@@ -250,16 +254,17 @@ def perform_comprehensive_analysis(results):
                 carbon_intensity_analysis['Correlation'] = float(correlation)
                 carbon_intensity_analysis['Correlation P-value'] = float(p_val_corr)
             
-            # Regression analysis
+            # Regression analysis with robust standard errors
             if len(valid_data) > 2:
                 try:
                     X = sm.add_constant(valid_carbon)
                     Y = valid_ar
-                    model = sm.OLS(Y, X).fit()
+                    model = sm.OLS(Y, X).fit(cov_type='HC3')  # Using HC3 robust standard errors
                     carbon_intensity_analysis['Regression'] = {
                         'Coefficient': float(model.params.iloc[1]) if len(model.params) > 1 else None,
                         'P-value': float(model.pvalues.iloc[1]) if len(model.pvalues) > 1 else None,
-                        'R-squared': float(model.rsquared)
+                        'R-squared': float(model.rsquared),
+                        'Robust Standard Error': float(model.bse.iloc[1]) if len(model.bse) > 1 else None
                     }
                 except Exception as e:
                     print(f"Error in regression analysis for {group_name}: {e}")

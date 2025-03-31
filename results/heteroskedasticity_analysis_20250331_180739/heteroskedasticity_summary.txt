@@ -1,0 +1,74 @@
+Heteroskedasticity Analysis Summary
+==================================================
+
+All Deals
+------------------------------
+
+Breusch-Pagan Test:
+LM Statistic: 7.5963
+P-value: 0.0058
+F-statistic: 7.6481
+F-test P-value: 0.0058
+
+White Test:
+LM Statistic: 8.2918
+P-value: 0.0158
+F-statistic: 4.1726
+F-test P-value: 0.0157
+
+Robust Standard Errors:
+Coefficient: -0.1379
+Standard Error: 0.1536
+P-value: 0.3691
+R-squared: 0.0010
+
+Interpretation:
+Evidence of heteroskedasticity detected. Using robust standard errors is recommended.
+
+Green Target
+------------------------------
+
+Breusch-Pagan Test:
+LM Statistic: 7.5202
+P-value: 0.0061
+F-statistic: 7.7452
+F-test P-value: 0.0059
+
+White Test:
+LM Statistic: 11.3158
+P-value: 0.0035
+F-statistic: 5.9183
+F-test P-value: 0.0032
+
+Robust Standard Errors:
+Coefficient: -0.1735
+Standard Error: 0.2578
+P-value: 0.5009
+R-squared: 0.0022
+
+Interpretation:
+Evidence of heteroskedasticity detected. Using robust standard errors is recommended.
+
+Brown Acquirer - Green Target
+------------------------------
+
+Breusch-Pagan Test:
+LM Statistic: 11.8235
+P-value: 0.0006
+F-statistic: 12.7514
+F-test P-value: 0.0005
+
+White Test:
+LM Statistic: 12.0456
+P-value: 0.0024
+F-statistic: 6.4588
+F-test P-value: 0.0021
+
+Robust Standard Errors:
+Coefficient: -0.6323
+Standard Error: 0.5556
+P-value: 0.2551
+R-squared: 0.0146
+
+Interpretation:
+Evidence of heteroskedasticity detected. Using robust standard errors is recommended.
